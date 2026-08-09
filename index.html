@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FullDex</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rubik:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --case-red:#D6261B;
+    --case-red-light:#EA3B2E;
+    --case-red-dark:#9E1B12;
+    --case-red-darker:#6E120B;
+    --bezel:#0D0D0D;
+    --screen-bg:#EFF3E4;
+    --screen-bg-dark:#DCE3CE;
+    --accent-blue:#3E7CB1;
+    --accent-blue-dark:#254F6E;
+    --accent-blue-light:#8FC7EE;
+    --gold:#FFD43B;
+    --green-led:#4CAF50;
+    --text-ink:#232323;
+    --text-muted:#6b6b60;
+    --card-bg:#FBFBF6;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;overscroll-behavior:none;}
+  body{
+    background:#0D0D0D;
+    font-family:'Rubik',sans-serif;
+    color:var(--text-ink);
+    height:100vh;
+    height:100dvh;
+    overflow:hidden;
+    display:flex;
+    justify-content:center;
+    align-items:stretch;
+    padding:12px;
+  }
+  .app{
+    width:100%;
+    max-width:1500px;
+    height:100%;
+    display:flex;
+    gap:12px;
+    min-height:0;
+  }
+  .screen-panel, .control-panel{
+    background:linear-gradient(180deg,var(--case-red-light),var(--case-red) 12%, var(--case-red) 88%, var(--case-red-dark));
+    border-radius:20px;
+    padding:14px;
+    box-shadow:0 10px 0 var(--case-red-darker), 0 14px 24px rgba(0,0,0,.45);
+    border:2px solid rgba(0,0,0,.15);
+    display:flex;
+    flex-direction:column;
+    min-height:0;
+  }
+  .screen-panel{flex:1 1 58%;}
+  .control-panel{flex:1 1 42%;gap:10px;}
+  .top-bar{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:2px 4px 10px;
+    flex-shrink:0;
+  }
+  .lens{
+    width:40px;height:40px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, var(--accent-blue-light), var(--accent-blue) 55%, var(--accent-blue-dark) 100%);
+    border:4px solid #eef6fb;
+    box-shadow:0 3px 0 rgba(0,0,0,.35), inset 0 0 8px rgba(0,0,0,.25);
+    flex-shrink:0;
+    position:relative;
+    overflow:hidden;
+  }
+  .lens::after{
+    content:"";
+    position:absolute;top:8%;left:18%;
+    width:34%;height:22%;
+    background:rgba(255,255,255,.55);
+    border-radius:50%;
+    transform:rotate(-25deg);
+  }
+  .lights{display:flex;gap:7px;align-items:center;flex-shrink:0;}
+  .light{width:10px;height:10px;border-radius:50%;box-shadow:inset 0 0 2px rgba(0,0,0,.4), 0 0 4px rgba(255,255,255,.2);}
+  .light.r{background:#ff5b52;}
+  .light.y{background:var(--gold);}
+  .light.g{background:var(--green-led);animation:blink 2.4s ease-in-out infinite;}
+  @keyframes blink{0%,100%{opacity:1;}50%{opacity:.35;}}
+  .title-block{flex:1;min-width:0;}
+  .title-block h1{
+    font-family:'Press Start 2P',monospace;
+    font-size:13px;
+    color:#fff;
+    margin:0 0 3px;
+    letter-spacing:1px;
+    text-shadow:2px 2px 0 rgba(0,0,0,.3);
+  }
+  .title-block p{
+    margin:0;
+    font-size:11px;
+    color:rgba(255,255,255,.85);
+    font-family:'Space Mono',monospace;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .screen-frame{
+    background:var(--bezel);
+    border-radius:12px;
+    padding:10px;
+    box-shadow:inset 0 0 0 3px #000, inset 0 3px 10px rgba(0,0,0,.6);
+    flex:1;
+    min-height:0;
+    display:flex;
+  }
+  .screen{
+    background:var(--screen-bg);
+    border-radius:6px;
+    position:relative;
+    overflow:hidden;
+    background-image:repeating-linear-gradient(180deg, rgba(0,0,0,.025) 0px, rgba(0,0,0,.025) 1px, transparent 1px, transparent 3px);
+    flex:1;
+    min-height:0;
+    display:flex;
+    flex-direction:column;
+  }
+  .screen-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    padding:10px 12px 8px;
+    border-bottom:2px solid var(--screen-bg-dark);
+    flex-wrap:wrap;
+    flex-shrink:0;
+  }
+  .screen-header .count{
+    font-family:'Space Mono',monospace;
+    font-size:12px;
+    color:var(--text-muted);
+  }
+  .status{
+    font-family:'Space Mono',monospace;
+    font-size:11px;
+    color:var(--accent-blue-dark);
+  }
+  .grid-area{
+    padding:12px;
+    flex:1;
+    min-height:0;
+    overflow-y:auto;
+  }
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(100px,1fr));
+    gap:9px;
+  }
+  .card{
+    background:var(--card-bg);
+    border:2px solid var(--screen-bg-dark);
+    border-radius:8px;
+    padding:8px 6px 10px;
+    text-align:center;
+    cursor:pointer;
+    transition:transform .12s ease, border-color .12s ease;
+  }
+  .card:hover{
+    transform:translateY(-2px);
+    border-color:var(--accent-blue);
+  }
+  .card:focus-visible{outline:2px solid var(--accent-blue);outline-offset:2px;}
+  .card{position:relative;}
+  .card img{width:72px;height:72px;image-rendering:pixelated;object-fit:contain;}
+  .card .num{
+    font-family:'Space Mono',monospace;
+    font-size:10px;
+    color:var(--text-muted);
+  }
+  .card .name{
+    font-size:12px;
+    font-weight:500;
+    text-transform:capitalize;
+    margin-top:2px;
+  }
+  .card.caught{border-color:var(--green-led);background:#eef6ec;}
+  .catch-toggle{
+    position:absolute;
+    top:5px;right:5px;
+    width:20px;height:20px;
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+    z-index:2;
+  }
+  .catch-toggle input{
+    appearance:none;
+    width:18px;height:18px;
+    margin:0;
+    border-radius:50%;
+    border:2px solid var(--screen-bg-dark);
+    background:#fff;
+    cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:inset 0 0 0 2px var(--card-bg);
+  }
+  .catch-toggle input:checked{
+    background:var(--green-led);
+    border-color:var(--green-led);
+  }
+  .catch-toggle input:checked::after{
+    content:"✓";
+    color:#fff;
+    font-size:11px;
+    font-weight:700;
+    display:block;
+    line-height:1;
+    transform:translateY(-1px);
+  }
+  .progress-wrap{
+    display:flex;align-items:center;gap:8px;
+    font-family:'Space Mono',monospace;
+    font-size:11px;
+    color:var(--accent-blue-dark);
+  }
+  .progress-bar-bg{width:90px;height:6px;background:var(--screen-bg-dark);border-radius:3px;overflow:hidden;}
+  .progress-bar-fill{height:100%;background:var(--green-led);border-radius:3px;}
+  .reset-btn{
+    background:none;
+    border:1px solid var(--text-muted);
+    color:var(--text-muted);
+    font-size:10px;
+    font-family:'Space Mono',monospace;
+    border-radius:5px;
+    padding:2px 6px;
+    cursor:pointer;
+  }
+  .reset-btn:hover{border-color:var(--case-red);color:var(--case-red);}
+  .empty-msg, .loading-msg{
+    text-align:center;
+    padding:60px 20px;
+    color:var(--text-muted);
+    font-family:'Space Mono',monospace;
+    font-size:13px;
+  }
+  select, input[type="text"]{
+    appearance:none;
+    background:var(--screen-bg);
+    border:none;
+    border-radius:6px;
+    padding:9px 10px;
+    font-family:'Rubik',sans-serif;
+    font-size:13px;
+    color:var(--text-ink);
+    box-shadow:inset 0 0 0 2px var(--case-red-darker);
+    width:100%;
+  }
+  select:disabled{color:var(--text-muted);}
+  .control-header{
+    display:flex;align-items:center;gap:10px;
+    flex-shrink:0;
+  }
+  .control-header h2{
+    font-family:'Press Start 2P',monospace;
+    font-size:11px;
+    color:#fff;
+    margin:0;
+    letter-spacing:1px;
+    text-shadow:2px 2px 0 rgba(0,0,0,.3);
+    flex:1;
+  }
+  .lang-select{
+    width:auto;
+    flex-shrink:0;
+    padding:6px 8px;
+    font-size:12px;
+    border-radius:6px;
+  }
+  .keypad{
+    background:var(--case-red-dark);
+    border-radius:12px;
+    padding:14px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    box-shadow:inset 0 2px 6px rgba(0,0,0,.3);
+    flex-shrink:0;
+  }
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{
+    font-family:'Space Mono',monospace;
+    font-size:10px;
+    color:rgba(255,255,255,.85);
+    text-transform:uppercase;
+    letter-spacing:.5px;
+  }
+  .info-strip{
+    background:var(--bezel);
+    border-radius:10px;
+    padding:8px 10px;
+    flex-shrink:0;
+    box-shadow:inset 0 0 0 2px #000;
+  }
+  .info-strip-inner{
+    background:var(--accent-blue-dark);
+    border-radius:5px;
+    padding:8px 10px;
+    font-family:'Space Mono',monospace;
+    font-size:11px;
+    color:#eaf4ff;
+    line-height:1.5;
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+  }
+  .info-strip-inner b{color:#fff;}
+  .control-filler{flex:1;min-height:0;}
+  .deco-cluster{
+    display:flex;align-items:center;gap:14px;
+    padding:6px 10px;
+    flex-shrink:0;
+  }
+  .dpad{
+    position:relative;width:40px;height:40px;flex-shrink:0;
+  }
+  .dpad::before, .dpad::after{
+    content:"";position:absolute;background:var(--green-led);border-radius:3px;
+    box-shadow:inset 0 -2px 0 rgba(0,0,0,.2);
+  }
+  .dpad::before{top:0;left:33%;width:34%;height:100%;}
+  .dpad::after{top:33%;left:0;width:100%;height:34%;}
+  .round-btn{
+    width:26px;height:26px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #ff8a80, #d6261b 70%);
+    box-shadow:0 2px 0 rgba(0,0,0,.35);
+    flex-shrink:0;
+  }
+  .grille{
+    display:flex;
+    gap:3px;
+    align-items:center;
+    padding:2px 6px;
+  }
+  .grille span{width:100%;height:2px;background:rgba(0,0,0,.25);border-radius:1px;flex:1;}
+  .footer-decor{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:0 4px;
+    flex-shrink:0;
+  }
+  .footer-decor .grille-wrap{display:flex;flex-direction:column;gap:3px;width:60px;}
+
+  @media (max-width:900px){
+    body{padding:8px;}
+    .app{flex-direction:column;gap:8px;}
+    .screen-panel{flex:1 1 auto;min-height:0;padding:10px;}
+    .control-panel{flex:0 0 auto;padding:10px;gap:8px;}
+    .deco-cluster, .info-strip{display:none;}
+    .keypad{flex-direction:row;flex-wrap:wrap;padding:10px;gap:8px;}
+    .keypad .field{flex:1 1 140px;min-width:120px;}
+    .title-block h1{font-size:11px;}
+    .lens{width:32px;height:32px;}
+    .card img{width:56px;height:56px;}
+  }
+  @media (max-width:480px){
+    .keypad .field{flex:1 1 100%;}
+  }
+
+  .modal-overlay{
+    position:fixed;inset:0;
+    background:rgba(0,0,0,.6);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    z-index:50;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal{
+    background:var(--screen-bg);
+    border-radius:14px;
+    border:6px solid var(--bezel);
+    max-width:480px;
+    width:100%;
+    max-height:88vh;
+    overflow-y:auto;
+    padding:0;
+  }
+  .modal-top{
+    background:var(--case-red);
+    padding:14px 16px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    color:#fff;
+  }
+  .modal-top .num{
+    font-family:'Press Start 2P',monospace;
+    font-size:11px;
+  }
+  .modal-close{
+    background:rgba(0,0,0,.25);
+    border:none;
+    color:#fff;
+    width:26px;height:26px;
+    border-radius:50%;
+    cursor:pointer;
+    font-size:14px;
+    line-height:1;
+  }
+  .modal-body{padding:18px;}
+  .modal-body h2{
+    text-transform:capitalize;
+    margin:0 0 6px;
+    font-size:20px;
+  }
+  .modal-sprite{
+    display:flex;justify-content:center;
+    background:var(--card-bg);
+    border-radius:10px;
+    padding:10px;
+    margin-bottom:14px;
+    border:2px solid var(--screen-bg-dark);
+  }
+  .modal-sprite img{width:160px;height:160px;object-fit:contain;image-rendering:pixelated;}
+  .badges{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+  .type-badge{
+    font-size:11px;
+    font-weight:700;
+    color:#fff;
+    padding:3px 10px;
+    border-radius:12px;
+    text-transform:capitalize;
+    letter-spacing:.3px;
+  }
+  .desc{
+    font-size:13px;
+    line-height:1.6;
+    color:var(--text-ink);
+    margin-bottom:14px;
+  }
+  .meta-row{
+    display:flex;gap:16px;margin-bottom:14px;flex-wrap:wrap;
+  }
+  .meta-item{font-size:12px;color:var(--text-muted);}
+  .meta-item b{color:var(--text-ink);display:block;font-size:13px;}
+  .stats{margin-bottom:14px;}
+  .stat-row{display:flex;align-items:center;gap:8px;margin-bottom:5px;}
+  .stat-label{width:80px;font-size:11px;color:var(--text-muted);font-family:'Space Mono',monospace;flex-shrink:0;}
+  .stat-bar-bg{flex:1;background:var(--screen-bg-dark);border-radius:4px;height:8px;overflow:hidden;}
+  .stat-bar-fill{height:100%;background:var(--accent-blue);border-radius:4px;}
+  .stat-val{width:28px;text-align:right;font-size:11px;font-family:'Space Mono',monospace;color:var(--text-ink);}
+  .games-title{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin:0 0 6px;font-family:'Space Mono',monospace;}
+  .game-chips{display:flex;flex-wrap:wrap;gap:5px;}
+  .game-chip{
+    font-size:10px;
+    background:var(--card-bg);
+    border:1px solid var(--screen-bg-dark);
+    padding:2px 8px;
+    border-radius:10px;
+    color:var(--text-muted);
+  }
+  .modal-loading{padding:40px;text-align:center;color:var(--text-muted);font-family:'Space Mono',monospace;font-size:12px;}
+  .catch-block{
+    display:flex;align-items:center;justify-content:space-between;
+    background:var(--card-bg);
+    border:2px solid var(--screen-bg-dark);
+    border-radius:8px;
+    padding:8px 12px;
+    margin-bottom:14px;
+  }
+  .catch-block span{font-size:12px;color:var(--text-muted);}
+  .catch-block label{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:500;cursor:pointer;}
+  .catch-block input{width:18px;height:18px;cursor:pointer;accent-color:var(--green-led);}
+  .type-chart-title{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin:0 0 6px;font-family:'Space Mono',monospace;}
+  .type-chart{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:5px;
+    margin-bottom:6px;
+  }
+  .type-chart-row{
+    display:flex;align-items:center;justify-content:space-between;
+    background:var(--card-bg);
+    border:1px solid var(--screen-bg-dark);
+    border-radius:6px;
+    padding:4px 8px;
+  }
+  .tc-type{font-size:10px;font-weight:700;color:#fff;padding:2px 7px;border-radius:10px;text-transform:capitalize;}
+  .tc-mult{font-size:11px;font-family:'Space Mono',monospace;font-weight:700;padding:1px 6px;border-radius:5px;}
+  .tc-weak{background:#FCE1E1;color:#9E1B12;}
+  .tc-resist{background:#E1F5E1;color:#1B6E1B;}
+  .tc-immune{background:#E4E4E4;color:#555;}
+  .tc-normal{background:var(--screen-bg-dark);color:var(--text-muted);}
+  @media (max-width:420px){.type-chart{grid-template-columns:1fr;}}
+
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  
+  .card, .reset-btn, .modal-close, select, input, .catch-toggle {
+    touch-action: manipulation;
+  }
+
+  
+  .grid-area, .modal, .modal-body {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  
+  @media (hover: none) {
+    .card:hover {
+      transform: none;
+      border-color: var(--screen-bg-dark); 
+    }
+    .card.caught:hover {
+      border-color: var(--green-led); 
+    }
+    .reset-btn:hover {
+      border-color: var(--text-muted);
+      color: var(--text-muted);
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="screen-panel">
+    <div class="top-bar">
+      <div class="lens" aria-hidden="true"></div>
+      <div class="title-block">
+        <h1>FULLDEX</h1>
+        <p id="subtitle">Cargando datos nacionales...</p>
+      </div>
+      <div class="lights" aria-hidden="true">
+        <div class="light r"></div>
+        <div class="light y"></div>
+        <div class="light g"></div>
+      </div>
+    </div>
+
+    <div class="screen-frame">
+      <div class="screen">
+        <div class="screen-header">
+          <span class="count" id="resultCount">Cargando...</span>
+          <div class="progress-wrap" id="progressWrap" style="display:none;">
+            <span id="progressLabel">0/0 capturados</span>
+            <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressBarFill" style="width:0%"></div></div>
+            <button class="reset-btn" id="resetBtn" type="button">Reiniciar</button>
+          </div>
+          <span class="status" id="statusMsg"></span>
+        </div>
+        <div class="grid-area">
+          <div id="loadingMsg" class="loading-msg">Conectando con la Pokédex nacional...</div>
+          <div class="grid" id="grid" style="display:none;"></div>
+          <div class="empty-msg" id="emptyMsg" style="display:none;">No se encontraron Pokémon con estos filtros.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="control-panel">
+    <div class="control-header">
+      <h2 id="controlsTitleEl">CONTROLES</h2>
+      <select id="langSelect" class="lang-select" aria-label="Idioma"></select>
+    </div>
+
+    <div class="info-strip" aria-hidden="true">
+      <div class="info-strip-inner">
+        <span id="infoStrip1El">Usa los filtros para explorar por generación o juego.</span>
+        <span id="infoStrip2El">Selecciona un juego para activar tu checklist de captura.</span>
+      </div>
+    </div>
+
+    <div class="keypad">
+      <div class="field">
+        <label for="searchInput" id="searchLabelEl">Buscar</label>
+        <input type="text" id="searchInput" placeholder="Nombre o número...">
+      </div>
+      <div class="field">
+        <label for="genSelect" id="genLabelEl">Generación</label>
+        <select id="genSelect">
+          <option value="all">Todas</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="gameSelect" id="gameLabelEl">Juego</label>
+        <select id="gameSelect" disabled>
+          <option value="all">Cargando juegos...</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="control-filler" aria-hidden="true"></div>
+
+    <div class="deco-cluster" aria-hidden="true">
+      <div class="dpad"></div>
+      <div class="round-btn"></div>
+      <div class="grille-wrap" style="flex:1;">
+        <span class="grille"><span></span><span></span><span></span></span>
+        <span class="grille"><span></span><span></span><span></span></span>
+      </div>
+    </div>
+
+    <div class="footer-decor" aria-hidden="true">
+      <div class="grille-wrap">
+        <span class="grille"><span></span><span></span><span></span></span>
+        <span class="grille"><span></span><span></span><span></span></span>
+      </div>
+      <div class="grille-wrap">
+        <span class="grille"><span></span><span></span><span></span></span>
+        <span class="grille"><span></span><span></span><span></span></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-top">
+      <span class="num" id="modalNum">#000</span>
+      <button class="modal-close" id="modalClose" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody">
+      <div class="modal-loading">Cargando datos...</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = 'https://pokeapi.co/api/v2';
+const SPRITE_URL = id => `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
+const ARTWORK_URL = id => `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`;
+
+const TYPE_COLORS = {
+  normal:'#A8A77A', fire:'#EE8130', water:'#6390F0', electric:'#F7D02C', grass:'#7AC74C',
+  ice:'#96D9D6', fighting:'#C22E28', poison:'#A33EA1', ground:'#E2BF65', flying:'#A98FF3',
+  psychic:'#F95587', bug:'#A6B91A', rock:'#B6A136', ghost:'#735797', dragon:'#6F35FC',
+  dark:'#705746', steel:'#B7B7CE', fairy:'#D685AD'
+};
+const TYPE_ES = {
+  normal:'normal', fire:'fuego', water:'agua', electric:'eléctrico', grass:'planta',
+  ice:'hielo', fighting:'lucha', poison:'veneno', ground:'tierra', flying:'volador',
+  psychic:'psíquico', bug:'bicho', rock:'roca', ghost:'fantasma', dragon:'dragón',
+  dark:'siniestro', steel:'acero', fairy:'hada'
+};
+const STAT_ES = {
+  hp:'PS', attack:'Ataque', defense:'Defensa',
+  'special-attack':'At. Esp.', 'special-defense':'Def. Esp.', speed:'Velocidad'
+};
+const TYPE_CHART = {
+  normal:   { double:[], half:['rock','steel'], zero:['ghost'] },
+  fire:     { double:['grass','ice','bug','steel'], half:['fire','water','rock','dragon'], zero:[] },
+  water:    { double:['fire','ground','rock'], half:['water','grass','dragon'], zero:[] },
+  electric: { double:['water','flying'], half:['electric','grass','dragon'], zero:['ground'] },
+  grass:    { double:['water','ground','rock'], half:['fire','grass','poison','flying','bug','dragon','steel'], zero:[] },
+  ice:      { double:['grass','ground','flying','dragon'], half:['fire','water','ice','steel'], zero:[] },
+  fighting: { double:['normal','ice','rock','dark','steel'], half:['poison','flying','psychic','bug','fairy'], zero:['ghost'] },
+  poison:   { double:['grass','fairy'], half:['poison','ground','rock','ghost'], zero:['steel'] },
+  ground:   { double:['fire','electric','poison','rock','steel'], half:['grass','bug'], zero:['flying'] },
+  flying:   { double:['grass','fighting','bug'], half:['electric','rock','steel'], zero:[] },
+  psychic:  { double:['fighting','poison'], half:['psychic','steel'], zero:['dark'] },
+  bug:      { double:['grass','psychic','dark'], half:['fire','fighting','poison','flying','ghost','steel','fairy'], zero:[] },
+  rock:     { double:['fire','ice','flying','bug'], half:['fighting','ground','steel'], zero:[] },
+  ghost:    { double:['psychic','ghost'], half:['dark'], zero:['normal'] },
+  dragon:   { double:['dragon'], half:['steel'], zero:['fairy'] },
+  dark:     { double:['psychic','ghost'], half:['fighting','dark','fairy'], zero:[] },
+  steel:    { double:['ice','rock','fairy'], half:['fire','water','electric','steel'], zero:[] },
+  fairy:    { double:['fighting','dragon','dark'], half:['fire','poison','steel'], zero:[] }
+};
+
+function computeEffectiveness(types){
+  const mult = {};
+  Object.keys(TYPE_CHART).forEach(t => mult[t] = 1);
+  types.forEach(defType => {
+    Object.keys(TYPE_CHART).forEach(atkType => {
+      const rel = TYPE_CHART[atkType];
+      let m = 1;
+      if (rel.double.includes(defType)) m = 2;
+      else if (rel.half.includes(defType)) m = 0.5;
+      else if (rel.zero.includes(defType)) m = 0;
+      mult[atkType] *= m;
+    });
+  });
+  return mult;
+}
+
+function multLabel(m){
+  if (m === 0) return { text:'inmune', cls:'tc-immune' };
+  if (m === 0.25) return { text:'×¼', cls:'tc-resist' };
+  if (m === 0.5) return { text:'×½', cls:'tc-resist' };
+  if (m === 1) return { text:'×1', cls:'tc-normal' };
+  if (m === 2) return { text:'×2', cls:'tc-weak' };
+  if (m === 4) return { text:'×4', cls:'tc-weak' };
+  return { text:`×${m}`, cls:'tc-normal' };
+}
+
+const GEN_ROMAN = {
+  'generation-i':'I','generation-ii':'II','generation-iii':'III','generation-iv':'IV',
+  'generation-v':'V','generation-vi':'VI','generation-vii':'VII','generation-viii':'VIII','generation-ix':'IX'
+};
+const GAME_ES = {
+  red:'Rojo', blue:'Azul', yellow:'Amarillo',
+  gold:'Oro', silver:'Plata', crystal:'Cristal',
+  ruby:'Rubí', sapphire:'Zafiro', emerald:'Esmeralda', firered:'Rojo Fuego', leafgreen:'Verde Hoja',
+  diamond:'Diamante', pearl:'Perla', platinum:'Platino', heartgold:'Oro HeartGold', soulsilver:'Plata SoulSilver',
+  black:'Negro', white:'Blanco', 'black-2':'Negro 2', 'white-2':'Blanco 2',
+  x:'X', y:'Y', 'omega-ruby':'Rubí Omega', 'alpha-sapphire':'Zafiro Alfa',
+  sun:'Sol', moon:'Luna', 'ultra-sun':'Ultrasol', 'ultra-moon':'Ultraluna',
+  'lets-go-pikachu':"Let's Go Pikachu", 'lets-go-eevee':"Let's Go Eevee",
+  sword:'Espada', shield:'Escudo', 'brilliant-diamond':'Diamante Brillante', 'shining-pearl':'Perla Reluciente',
+  'legends-arceus':'Leyendas Arceus', scarlet:'Escarlata', violet:'Púrpura'
+};
+
+const LANGUAGES = [
+  { code:'es', label:'Español', api:'es' },
+  { code:'en', label:'English', api:'en' },
+  { code:'ja-Hrkt', label:'日本語', api:'ja-Hrkt' },
+  { code:'ko', label:'한국어', api:'ko' },
+  { code:'zh-Hans', label:'简体中文', api:'zh-Hans' },
+  { code:'zh-Hant', label:'繁體中文', api:'zh-Hant' },
+  { code:'fr', label:'Français', api:'fr' },
+  { code:'de', label:'Deutsch', api:'de' },
+  { code:'it', label:'Italiano', api:'it' },
+  { code:'pt-BR', label:'Português', api:'pt-BR' }
+];
+
+const UI_STRINGS = {
+  es:{ searchLabel:'Buscar', searchPlaceholder:'Nombre o número...', genLabel:'Generación', genAll:'Todas', gameLabel:'Juego', gameLoading:'Cargando juegos...', gameAll:'Todos', controlsTitle:'CONTROLES', infoStrip1:'Usa los filtros para explorar por generación o juego.', infoStrip2:'Selecciona un juego para activar tu checklist de captura.', resetBtn:'Reiniciar', emptyMsg:'No se encontraron Pokémon con estos filtros.', loadingMsg:'Conectando con la Pokédex nacional...', connectErrorMsg:'No se pudo conectar con la Pokédex. Revisa tu conexión e intenta de nuevo.', subtitleCount:'especies catalogadas', resultCount:'Pokémon encontrados', progressCaught:'capturados', generationWord:'Generación', heightLabel:'altura', weightLabel:'peso', typeChartTitle:'Guía de combate — daño recibido por tipo', gamesTitle:'Disponible en', noGamesMsg:'No disponible en juegos principales', catchBlockPrefix:'Checklist de', catchLabel:'Capturado', modalLoading:'Cargando datos...', modalError:'No se pudieron cargar los datos. Intenta de nuevo.', noDesc:'Sin descripción disponible.', gamesLoadingChip:'Cargando...', immuneShort:'inmune' },
+  en:{ searchLabel:'Search', searchPlaceholder:'Name or number...', genLabel:'Generation', genAll:'All', gameLabel:'Game', gameLoading:'Loading games...', gameAll:'All', controlsTitle:'CONTROLS', infoStrip1:'Use the filters to explore by generation or game.', infoStrip2:'Select a game to enable your capture checklist.', resetBtn:'Reset', emptyMsg:'No Pokémon found with these filters.', loadingMsg:'Connecting to the national Pokédex...', connectErrorMsg:"Couldn't connect to the Pokédex. Check your connection and try again.", subtitleCount:'species catalogued', resultCount:'Pokémon found', progressCaught:'caught', generationWord:'Generation', heightLabel:'height', weightLabel:'weight', typeChartTitle:'Combat guide — damage taken by type', gamesTitle:'Available in', noGamesMsg:'Not available in main series games', catchBlockPrefix:'Checklist for', catchLabel:'Caught', modalLoading:'Loading data...', modalError:"Couldn't load data. Try again.", noDesc:'No description available.', gamesLoadingChip:'Loading...', immuneShort:'immune' },
+  'ja-Hrkt':{ searchLabel:'検索', searchPlaceholder:'名前または番号...', genLabel:'世代', genAll:'すべて', gameLabel:'ゲーム', gameLoading:'ゲームを読み込み中...', gameAll:'すべて', controlsTitle:'コントロール', infoStrip1:'フィルターで世代やゲームを絞り込めます。', infoStrip2:'ゲームを選ぶと捕獲チェックリストが使えます。', resetBtn:'リセット', emptyMsg:'条件に一致するポケモンが見つかりません。', loadingMsg:'全国図鑑に接続中...', connectErrorMsg:'図鑑に接続できません。接続を確認してもう一度お試しください。', subtitleCount:'種を収録', resultCount:'匹のポケモン', progressCaught:'匹捕獲', generationWord:'世代', heightLabel:'高さ', weightLabel:'重さ', typeChartTitle:'バトルガイド — タイプ別ダメージ倍率', gamesTitle:'登場するゲーム', noGamesMsg:'本編シリーズには登場しません', catchBlockPrefix:'チェックリスト：', catchLabel:'捕獲済み', modalLoading:'データを読み込み中...', modalError:'データを読み込めませんでした。もう一度お試しください。', noDesc:'説明がありません。', gamesLoadingChip:'読み込み中...', immuneShort:'無効' },
+  ko:{ searchLabel:'검색', searchPlaceholder:'이름 또는 번호...', genLabel:'세대', genAll:'전체', gameLabel:'게임', gameLoading:'게임 불러오는 중...', gameAll:'전체', controlsTitle:'컨트롤', infoStrip1:'필터로 세대나 게임별로 탐색해 보세요.', infoStrip2:'게임을 선택하면 포획 체크리스트가 활성화됩니다.', resetBtn:'초기화', emptyMsg:'이 필터와 일치하는 포켓몬이 없습니다.', loadingMsg:'전국도감에 연결하는 중...', connectErrorMsg:'도감에 연결할 수 없습니다. 연결 상태를 확인하고 다시 시도하세요.', subtitleCount:'종 등록됨', resultCount:'마리 발견', progressCaught:'마리 포획', generationWord:'세대', heightLabel:'키', weightLabel:'몸무게', typeChartTitle:'배틀 가이드 — 타입별 받는 피해', gamesTitle:'등장 게임', noGamesMsg:'본편 게임에 등장하지 않음', catchBlockPrefix:'체크리스트:', catchLabel:'포획함', modalLoading:'데이터 불러오는 중...', modalError:'데이터를 불러올 수 없습니다. 다시 시도하세요.', noDesc:'설명이 없습니다.', gamesLoadingChip:'불러오는 중...', immuneShort:'무효' },
+  'zh-Hans':{ searchLabel:'搜索', searchPlaceholder:'名称或编号...', genLabel:'世代', genAll:'全部', gameLabel:'游戏', gameLoading:'正在加载游戏...', gameAll:'全部', controlsTitle:'控制面板', infoStrip1:'使用筛选器按世代或游戏浏览。', infoStrip2:'选择游戏以启用捕捉清单。', resetBtn:'重置', emptyMsg:'没有符合筛选条件的宝可梦。', loadingMsg:'正在连接全国图鉴...', connectErrorMsg:'无法连接图鉴，请检查网络后重试。', subtitleCount:'种已收录', resultCount:'只宝可梦', progressCaught:'只已捕获', generationWord:'世代', heightLabel:'身高', weightLabel:'体重', typeChartTitle:'战斗指南 — 各属性受到的伤害', gamesTitle:'出现的游戏', noGamesMsg:'未在正传游戏中出现', catchBlockPrefix:'清单：', catchLabel:'已捕获', modalLoading:'正在加载数据...', modalError:'无法加载数据，请重试。', noDesc:'暂无描述。', gamesLoadingChip:'加载中...', immuneShort:'无效' },
+  'zh-Hant':{ searchLabel:'搜尋', searchPlaceholder:'名稱或編號...', genLabel:'世代', genAll:'全部', gameLabel:'遊戲', gameLoading:'正在載入遊戲...', gameAll:'全部', controlsTitle:'控制面板', infoStrip1:'使用篩選器依世代或遊戲瀏覽。', infoStrip2:'選擇遊戲以啟用捕捉清單。', resetBtn:'重設', emptyMsg:'沒有符合篩選條件的寶可夢。', loadingMsg:'正在連接全國圖鑑...', connectErrorMsg:'無法連接圖鑑，請檢查網路後重試。', subtitleCount:'種已收錄', resultCount:'隻寶可夢', progressCaught:'隻已捕獲', generationWord:'世代', heightLabel:'身高', weightLabel:'體重', typeChartTitle:'戰鬥指南 — 各屬性受到的傷害', gamesTitle:'出現的遊戲', noGamesMsg:'未在正傳遊戲中出現', catchBlockPrefix:'清單：', catchLabel:'已捕獲', modalLoading:'正在載入資料...', modalError:'無法載入資料，請重試。', noDesc:'暫無描述。', gamesLoadingChip:'載入中...', immuneShort:'無效' },
+  fr:{ searchLabel:'Rechercher', searchPlaceholder:'Nom ou numéro...', genLabel:'Génération', genAll:'Toutes', gameLabel:'Jeu', gameLoading:'Chargement des jeux...', gameAll:'Tous', controlsTitle:'CONTRÔLES', infoStrip1:'Utilisez les filtres pour explorer par génération ou par jeu.', infoStrip2:'Sélectionnez un jeu pour activer votre liste de capture.', resetBtn:'Réinitialiser', emptyMsg:'Aucun Pokémon trouvé avec ces filtres.', loadingMsg:'Connexion au Pokédex national...', connectErrorMsg:'Impossible de se connecter au Pokédex. Vérifiez votre connexion et réessayez.', subtitleCount:'espèces répertoriées', resultCount:'Pokémon trouvés', progressCaught:'capturés', generationWord:'Génération', heightLabel:'taille', weightLabel:'poids', typeChartTitle:'Guide de combat — dégâts reçus par type', gamesTitle:'Disponible dans', noGamesMsg:'Non disponible dans les jeux principaux', catchBlockPrefix:'Liste de', catchLabel:'Capturé', modalLoading:'Chargement des données...', modalError:'Impossible de charger les données. Réessayez.', noDesc:'Aucune description disponible.', gamesLoadingChip:'Chargement...', immuneShort:'immunisé' },
+  de:{ searchLabel:'Suchen', searchPlaceholder:'Name oder Nummer...', genLabel:'Generation', genAll:'Alle', gameLabel:'Spiel', gameLoading:'Spiele werden geladen...', gameAll:'Alle', controlsTitle:'STEUERUNG', infoStrip1:'Nutze die Filter, um nach Generation oder Spiel zu suchen.', infoStrip2:'Wähle ein Spiel, um deine Fang-Checkliste zu aktivieren.', resetBtn:'Zurücksetzen', emptyMsg:'Keine Pokémon mit diesen Filtern gefunden.', loadingMsg:'Verbindung zum nationalen Pokédex...', connectErrorMsg:'Verbindung zum Pokédex fehlgeschlagen. Prüfe deine Verbindung und versuche es erneut.', subtitleCount:'Arten erfasst', resultCount:'Pokémon gefunden', progressCaught:'gefangen', generationWord:'Generation', heightLabel:'Größe', weightLabel:'Gewicht', typeChartTitle:'Kampfguide — erlittener Schaden nach Typ', gamesTitle:'Verfügbar in', noGamesMsg:'In den Hauptspielen nicht verfügbar', catchBlockPrefix:'Checkliste für', catchLabel:'Gefangen', modalLoading:'Daten werden geladen...', modalError:'Daten konnten nicht geladen werden. Versuche es erneut.', noDesc:'Keine Beschreibung verfügbar.', gamesLoadingChip:'Lädt...', immuneShort:'immun' },
+  it:{ searchLabel:'Cerca', searchPlaceholder:'Nome o numero...', genLabel:'Generazione', genAll:'Tutte', gameLabel:'Gioco', gameLoading:'Caricamento giochi...', gameAll:'Tutti', controlsTitle:'CONTROLLI', infoStrip1:'Usa i filtri per esplorare per generazione o gioco.', infoStrip2:'Seleziona un gioco per attivare la tua checklist di cattura.', resetBtn:'Reimposta', emptyMsg:'Nessun Pokémon trovato con questi filtri.', loadingMsg:'Connessione al Pokédex nazionale...', connectErrorMsg:'Impossibile connettersi al Pokédex. Controlla la connessione e riprova.', subtitleCount:'specie catalogate', resultCount:'Pokémon trovati', progressCaught:'catturati', generationWord:'Generazione', heightLabel:'altezza', weightLabel:'peso', typeChartTitle:'Guida al combattimento — danno subito per tipo', gamesTitle:'Disponibile in', noGamesMsg:'Non disponibile nei giochi principali', catchBlockPrefix:'Checklist di', catchLabel:'Catturato', modalLoading:'Caricamento dati...', modalError:'Impossibile caricare i dati. Riprova.', noDesc:'Nessuna descrizione disponibile.', gamesLoadingChip:'Caricamento...', immuneShort:'immune' },
+  'pt-BR':{ searchLabel:'Buscar', searchPlaceholder:'Nome ou número...', genLabel:'Geração', genAll:'Todas', gameLabel:'Jogo', gameLoading:'Carregando jogos...', gameAll:'Todos', controlsTitle:'CONTROLES', infoStrip1:'Use os filtros para explorar por geração ou jogo.', infoStrip2:'Selecione um jogo para ativar sua checklist de captura.', resetBtn:'Reiniciar', emptyMsg:'Nenhum Pokémon encontrado com esses filtros.', loadingMsg:'Conectando à Pokédex nacional...', connectErrorMsg:'Não foi possível conectar à Pokédex. Verifique sua conexão e tente novamente.', subtitleCount:'espécies catalogadas', resultCount:'Pokémon encontrados', progressCaught:'capturados', generationWord:'Geração', heightLabel:'altura', weightLabel:'peso', typeChartTitle:'Guia de combate — dano recebido por tipo', gamesTitle:'Disponível em', noGamesMsg:'Não disponível nos jogos principais', catchBlockPrefix:'Checklist de', catchLabel:'Capturado', modalLoading:'Carregando dados...', modalError:'Não foi possível carregar os dados. Tente novamente.', noDesc:'Nenhuma descrição disponível.', gamesLoadingChip:'Carregando...', immuneShort:'imune' }
+};
+
+let currentLang = 'es';
+function t(key){
+  return (UI_STRINGS[currentLang] && UI_STRINGS[currentLang][key]) || UI_STRINGS.en[key] || key;
+}
+
+const TYPE_NAMES = {};
+const STAT_NAMES = {};
+
+async function loadTypesAndStats(){
+  try {
+    const typeNames = Object.keys(TYPE_COLORS);
+    const typeDetails = await Promise.all(typeNames.map(n => fetch(`${API}/type/${n}`).then(r=>r.json())));
+    typeDetails.forEach(td => {
+      TYPE_NAMES[td.name] = {};
+      td.names.forEach(n => { TYPE_NAMES[td.name][n.language.name] = n.name; });
+    });
+    const statNames = Object.keys(STAT_ES);
+    const statDetails = await Promise.all(statNames.map(n => fetch(`${API}/stat/${n}`).then(r=>r.json())));
+    statDetails.forEach(sd => {
+      STAT_NAMES[sd.name] = {};
+      sd.names.forEach(n => { STAT_NAMES[sd.name][n.language.name] = n.name; });
+    });
+  } catch (e){
+    console.error('No se pudieron cargar los nombres localizados de tipos y estadísticas', e);
+  }
+}
+
+function typeLabel(typeName){
+  return (TYPE_NAMES[typeName] && TYPE_NAMES[typeName][currentLang]) || TYPE_ES[typeName] || typeName;
+}
+function statLabel(statName){
+  return (STAT_NAMES[statName] && STAT_NAMES[statName][currentLang]) || STAT_ES[statName] || statName;
+}
+
+let allSpecies = [];
+let lastOpenedId = null;
+
+
+let gameSpeciesMap = {};
+let genOrder = [];
+let currentFilter = { gen:'all', game:'all', search:'' };
+let caughtSet = new Set();
+
+const hasArtifactStorage = typeof window.storage !== 'undefined' && window.storage && typeof window.storage.get === 'function';
+
+async function storageGet(key){
+  if (hasArtifactStorage){
+    try {
+      const res = await window.storage.get(key, false);
+      return res ? res.value : null;
+    } catch (e){
+      return null;
+    }
+  }
+  try { return localStorage.getItem(key); } catch (e){ return null; }
+}
+
+async function storageSet(key, value){
+  if (hasArtifactStorage){
+    try { await window.storage.set(key, value, false); return; } catch (e){ /* fall through to backup */ }
+  }
+  try { localStorage.setItem(key, value); } catch (e){ /* storage unavailable */ }
+}
+
+async function loadCaught(game){
+  if (game === 'all') return new Set();
+  try {
+    const raw = await storageGet(`caught:${game}`);
+    if (raw) return new Set(JSON.parse(raw));
+    return new Set();
+  } catch (e){
+    return new Set();
+  }
+}
+
+async function saveCaught(game){
+  if (game === 'all') return;
+  try {
+    await storageSet(`caught:${game}`, JSON.stringify([...caughtSet]));
+  } catch (e){
+    console.error('No se pudo guardar el checklist', e);
+  }
+}
+
+function updateProgress(){
+  const progressWrap = document.getElementById('progressWrap');
+  if (currentFilter.game === 'all'){
+    progressWrap.style.display = 'none';
+    return;
+  }
+  const total = gameSpeciesMap[currentFilter.game] ? gameSpeciesMap[currentFilter.game].size : 0;
+  const caught = caughtSet.size;
+  const pct = total ? Math.round((caught/total)*100) : 0;
+  document.getElementById('progressLabel').textContent = `${caught}/${total} ${t('progressCaught')}`;
+  document.getElementById('progressBarFill').style.width = `${pct}%`;
+  progressWrap.style.display = 'flex';
+}
+
+const grid = document.getElementById('grid');
+const loadingMsg = document.getElementById('loadingMsg');
+const emptyMsg = document.getElementById('emptyMsg');
+const resultCount = document.getElementById('resultCount');
+const statusMsg = document.getElementById('statusMsg');
+const subtitle = document.getElementById('subtitle');
+const genSelect = document.getElementById('genSelect');
+const gameSelect = document.getElementById('gameSelect');
+const searchInput = document.getElementById('searchInput');
+
+function idFromUrl(url){
+  const parts = url.split('/').filter(Boolean);
+  return parseInt(parts[parts.length-1], 10);
+}
+
+let generationDetails = [];
+let versionGroupDetails = [];
+
+async function loadGenerations(){
+  const res = await fetch(`${API}/generation?limit=100`);
+  const data = await res.json();
+  const details = await Promise.all(data.results.map(g => fetch(g.url).then(r=>r.json())));
+  details.sort((a,b)=> a.id - b.id);
+  genOrder = details.map(d => d.name);
+  generationDetails = details;
+  details.forEach(d => {
+    d.pokemon_species.forEach(sp => {
+      const id = idFromUrl(sp.url);
+      allSpecies.push({
+        id, name: sp.name, generation: d.name
+      });
+    });
+  });
+  allSpecies.sort((a,b)=> a.id - b.id);
+}
+
+async function loadGames(){
+  const vgRes = await fetch(`${API}/version-group?limit=50`);
+  const vgList = await vgRes.json();
+  const vgDetails = await Promise.all(vgList.results.map(v => fetch(v.url).then(r=>r.json())));
+  vgDetails.sort((a,b)=> a.id - b.id);
+  versionGroupDetails = vgDetails;
+
+  const pokedexNames = new Set();
+  vgDetails.forEach(vg => vg.pokedexes.forEach(p => pokedexNames.add(p.name)));
+
+  const pokedexEntries = await Promise.all(
+    [...pokedexNames].map(name => fetch(`${API}/pokedex/${name}`).then(r=>r.json()))
+  );
+  const pokedexSpeciesMap = {};
+  pokedexEntries.forEach(pd => {
+    pokedexSpeciesMap[pd.name] = new Set(pd.pokemon_entries.map(e => e.pokemon_species.name));
+  });
+
+  vgDetails.forEach(vg => {
+    const combined = new Set();
+    vg.pokedexes.forEach(p => {
+      const s = pokedexSpeciesMap[p.name];
+      if (s) s.forEach(name => combined.add(name));
+    });
+    vg.versions.forEach(v => {
+      gameSpeciesMap[v.name] = combined;
+    });
+  });
+
+  gameSelect.disabled = false;
+}
+
+function gameLabel(name){
+  if (currentLang === 'es') return GAME_ES[name] || capitalize(name);
+  return capitalize(name);
+}
+
+function renderFilterOptions(){
+  const prevGen = genSelect.value || 'all';
+  genSelect.innerHTML = '';
+  const allGenOpt = document.createElement('option');
+  allGenOpt.value = 'all';
+  allGenOpt.textContent = t('genAll');
+  genSelect.appendChild(allGenOpt);
+  generationDetails.forEach(d => {
+    const opt = document.createElement('option');
+    opt.value = d.name;
+    opt.textContent = `${t('generationWord')} ${GEN_ROMAN[d.name] || ''} — ${capitalize(d.main_region ? d.main_region.name : '')}`;
+    genSelect.appendChild(opt);
+  });
+  if ([...genSelect.options].some(o => o.value === prevGen)) genSelect.value = prevGen;
+
+  const prevGame = gameSelect.value || 'all';
+  gameSelect.innerHTML = '';
+  if (versionGroupDetails.length === 0){
+    const loadingOpt = document.createElement('option');
+    loadingOpt.value = 'all';
+    loadingOpt.textContent = t('gameLoading');
+    gameSelect.appendChild(loadingOpt);
+    return;
+  }
+  const allGameOpt = document.createElement('option');
+  allGameOpt.value = 'all';
+  allGameOpt.textContent = t('gameAll');
+  gameSelect.appendChild(allGameOpt);
+  versionGroupDetails.forEach(vg => {
+    if (!vg.versions.length) return;
+    const genName = vg.generation ? vg.generation.name : '';
+    let optgroup = gameSelect.querySelector(`optgroup[data-gen="${genName}"]`);
+    if (!optgroup){
+      optgroup = document.createElement('optgroup');
+      optgroup.label = `${t('generationWord')} ${GEN_ROMAN[genName] || ''}`;
+      optgroup.dataset.gen = genName;
+      gameSelect.appendChild(optgroup);
+    }
+    vg.versions.forEach(v => {
+      const opt = document.createElement('option');
+      opt.value = v.name;
+      opt.textContent = gameLabel(v.name);
+      optgroup.appendChild(opt);
+    });
+  });
+  if ([...gameSelect.options].some(o => o.value === prevGame)) gameSelect.value = prevGame;
+}
+
+function applyUIStrings(){
+  document.getElementById('controlsTitleEl').textContent = t('controlsTitle');
+  document.getElementById('infoStrip1El').textContent = t('infoStrip1');
+  document.getElementById('infoStrip2El').textContent = t('infoStrip2');
+  document.getElementById('searchLabelEl').textContent = t('searchLabel');
+  document.getElementById('genLabelEl').textContent = t('genLabel');
+  document.getElementById('gameLabelEl').textContent = t('gameLabel');
+  document.getElementById('resetBtn').textContent = t('resetBtn');
+  searchInput.placeholder = t('searchPlaceholder');
+  emptyMsg.textContent = t('emptyMsg');
+  renderFilterOptions();
+}
+
+function populateLangSelect(){
+  const langSelect = document.getElementById('langSelect');
+  langSelect.innerHTML = '';
+  LANGUAGES.forEach(l => {
+    const opt = document.createElement('option');
+    opt.value = l.code;
+    opt.textContent = l.label;
+    if (l.code === currentLang) opt.selected = true;
+    langSelect.appendChild(opt);
+  });
+  langSelect.addEventListener('change', async e => {
+    currentLang = e.target.value;
+    await storageSet('preferences:lang', currentLang);
+    applyUIStrings();
+    renderGrid();
+    if (modalOverlay.classList.contains('open') && lastOpenedId){
+      openModal(lastOpenedId);
+    }
+  });
+}
+
+function capitalize(s){
+  if (!s) return '';
+  return s.split('-').map(w => w.charAt(0).toUpperCase()+w.slice(1)).join(' ');
+}
+
+function renderGrid(){
+  const filtered = allSpecies.filter(sp => {
+    if (currentFilter.gen !== 'all' && sp.generation !== currentFilter.gen) return false;
+    if (currentFilter.game !== 'all'){
+      const set = gameSpeciesMap[currentFilter.game];
+      if (!set || !set.has(sp.name)) return false;
+    }
+    if (currentFilter.search){
+      const q = currentFilter.search.toLowerCase();
+      const numStr = String(sp.id).padStart(3,'0');
+      if (!sp.name.includes(q) && !numStr.includes(q)) return false;
+    }
+    return true;
+  });
+
+  resultCount.textContent = `${filtered.length} ${t('resultCount')}`;
+  grid.innerHTML = '';
+  if (filtered.length === 0){
+    grid.style.display = 'none';
+    emptyMsg.style.display = 'block';
+    return;
+  }
+  emptyMsg.style.display = 'none';
+  grid.style.display = 'grid';
+
+  const showChecklist = currentFilter.game !== 'all';
+  const frag = document.createDocumentFragment();
+  filtered.forEach(sp => {
+    const isCaught = showChecklist && caughtSet.has(sp.name);
+    const card = document.createElement('div');
+    card.className = 'card' + (isCaught ? ' caught' : '');
+    card.tabIndex = 0;
+    card.setAttribute('role','button');
+    card.setAttribute('aria-label', `Ver ${sp.name}`);
+    card.innerHTML = `
+      ${showChecklist ? `<label class="catch-toggle" title="Marcar como capturado">
+        <input type="checkbox" class="catch-checkbox" data-name="${sp.name}" ${isCaught ? 'checked' : ''}>
+      </label>` : ''}
+      <div class="num">#${String(sp.id).padStart(3,'0')}</div>
+      <img src="${SPRITE_URL(sp.id)}" alt="${sp.name}" loading="lazy" onerror="this.style.opacity='0.15'">
+      <div class="name">${sp.name.replace(/-/g,' ')}</div>
+    `;
+    card.addEventListener('click', (e) => { if (e.target.closest('.catch-toggle')) return; openModal(sp.id); });
+    card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openModal(sp.id); } });
+    frag.appendChild(card);
+  });
+  grid.appendChild(frag);
+  updateProgress();
+}
+
+grid.addEventListener('change', async e => {
+  if (!e.target.classList.contains('catch-checkbox')) return;
+  const name = e.target.dataset.name;
+  if (e.target.checked) caughtSet.add(name); else caughtSet.delete(name);
+  e.target.closest('.card').classList.toggle('caught', e.target.checked);
+  updateProgress();
+  await saveCaught(currentFilter.game);
+});
+
+genSelect.addEventListener('change', e => { currentFilter.gen = e.target.value; renderGrid(); });
+gameSelect.addEventListener('change', async e => {
+  currentFilter.game = e.target.value;
+  caughtSet = await loadCaught(currentFilter.game);
+  renderGrid();
+});
+document.getElementById('resetBtn').addEventListener('click', async () => {
+  if (currentFilter.game === 'all') return;
+  const gameLabel = GAME_ES[currentFilter.game] || capitalize(currentFilter.game);
+  if (!confirm(`¿Reiniciar el checklist de ${gameLabel}? Esto borrará todos los Pokémon marcados como capturados en este juego.`)) return;
+  caughtSet = new Set();
+  await saveCaught(currentFilter.game);
+  renderGrid();
+});
+let searchDebounce;
+searchInput.addEventListener('input', e => {
+  clearTimeout(searchDebounce);
+  searchDebounce = setTimeout(() => {
+    currentFilter.search = e.target.value.trim().toLowerCase();
+    renderGrid();
+  }, 200);
+});
+
+const modalOverlay = document.getElementById('modalOverlay');
+const modalBody = document.getElementById('modalBody');
+const modalNum = document.getElementById('modalNum');
+document.getElementById('modalClose').addEventListener('click', closeModal);
+modalOverlay.addEventListener('click', e => { if (e.target === modalOverlay) closeModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+function closeModal(){
+  modalOverlay.classList.remove('open');
+}
+
+async function openModal(id){
+  lastOpenedId = id;
+  modalOverlay.classList.add('open');
+  modalNum.textContent = `#${String(id).padStart(3,'0')}`;
+  modalBody.innerHTML = `<div class="modal-loading">${t('modalLoading')}</div>`;
+  try {
+    const [pokeRes, speciesRes] = await Promise.all([
+      fetch(`${API}/pokemon/${id}`).then(r=>r.json()),
+      fetch(`${API}/pokemon-species/${id}`).then(r=>r.json())
+    ]);
+
+    let flavor = speciesRes.flavor_text_entries.find(f => f.language.name === currentLang);
+    if (!flavor) flavor = speciesRes.flavor_text_entries.find(f => f.language.name === 'en');
+    const desc = flavor ? flavor.flavor_text.replace(/[\n\f\r]/g,' ') : t('noDesc');
+
+    const genName = speciesRes.generation.name;
+    const genLabel = `${t('generationWord')} ${GEN_ROMAN[genName] || ''}`;
+
+    let localizedName = speciesRes.names.find(n => n.language.name === currentLang);
+    if (!localizedName) localizedName = speciesRes.names.find(n => n.language.name === 'en');
+    const displayName = localizedName ? localizedName.name : speciesRes.name.replace(/-/g,' ');
+
+    const typesHtml = pokeRes.types.map(pt => {
+      const tn = pt.type.name;
+      const color = TYPE_COLORS[tn] || '#888';
+      return `<span class="type-badge" style="background:${color}">${typeLabel(tn)}</span>`;
+    }).join('');
+
+    const statsHtml = pokeRes.stats.map(s => {
+      const val = s.base_stat;
+      const pct = Math.min(100, Math.round((val/180)*100));
+      return `
+        <div class="stat-row">
+          <span class="stat-label">${statLabel(s.stat.name)}</span>
+          <div class="stat-bar-bg"><div class="stat-bar-fill" style="width:${pct}%"></div></div>
+          <span class="stat-val">${val}</span>
+        </div>`;
+    }).join('');
+
+    let gamesHtml = `<span class="game-chip">${t('gamesLoadingChip')}</span>`;
+    const gamesForThis = Object.keys(gameSpeciesMap).filter(g => gameSpeciesMap[g].has(speciesRes.name));
+    if (Object.keys(gameSpeciesMap).length){
+      gamesHtml = gamesForThis.length
+        ? gamesForThis.map(g => `<span class="game-chip">${gameLabel(g)}</span>`).join('')
+        : `<span class="game-chip">${t('noGamesMsg')}</span>`;
+    }
+
+    const catchHtml = currentFilter.game !== 'all' ? `
+      <div class="catch-block">
+        <span>${t('catchBlockPrefix')} ${gameLabel(currentFilter.game)}</span>
+        <label>
+          <input type="checkbox" id="modalCatchCheckbox" ${caughtSet.has(speciesRes.name) ? 'checked' : ''}>
+          ${t('catchLabel')}
+        </label>
+      </div>` : '';
+
+    const effectiveness = computeEffectiveness(pokeRes.types.map(pt => pt.type.name));
+    const sortedTypes = Object.keys(effectiveness).sort((a,b) => effectiveness[b] - effectiveness[a]);
+    const typeChartHtml = sortedTypes.map(tn => {
+      const lbl = multLabel(effectiveness[tn]);
+      return `
+        <div class="type-chart-row">
+          <span class="tc-type" style="background:${TYPE_COLORS[tn]}">${typeLabel(tn)}</span>
+          <span class="tc-mult ${lbl.cls}">${lbl.text}</span>
+        </div>`;
+    }).join('');
+
+    modalBody.innerHTML = `
+      <h2>${displayName}</h2>
+      <div class="badges">${typesHtml}</div>
+      <div class="modal-sprite">
+        <img src="${ARTWORK_URL(id)}" alt="${displayName}" onerror="this.src='${SPRITE_URL(id)}'">
+      </div>
+      ${catchHtml}
+      <p class="desc">${desc}</p>
+      <div class="meta-row">
+        <div class="meta-item"><b>${genLabel}</b>${t('generationWord')}</div>
+        <div class="meta-item"><b>${(pokeRes.height/10).toFixed(1)} m</b>${t('heightLabel')}</div>
+        <div class="meta-item"><b>${(pokeRes.weight/10).toFixed(1)} kg</b>${t('weightLabel')}</div>
+      </div>
+      <div class="stats">${statsHtml}</div>
+      <p class="type-chart-title">${t('typeChartTitle')}</p>
+      <div class="type-chart">${typeChartHtml}</div>
+      <p class="games-title">${t('gamesTitle')}</p>
+      <div class="game-chips">${gamesHtml}</div>
+    `;
+
+    const modalCatchCheckbox = document.getElementById('modalCatchCheckbox');
+    if (modalCatchCheckbox){
+      modalCatchCheckbox.addEventListener('change', async e => {
+        if (e.target.checked) caughtSet.add(speciesRes.name); else caughtSet.delete(speciesRes.name);
+        updateProgress();
+        await saveCaught(currentFilter.game);
+        const cardCheckbox = grid.querySelector(`.catch-checkbox[data-name="${speciesRes.name}"]`);
+        if (cardCheckbox){
+          cardCheckbox.checked = e.target.checked;
+          cardCheckbox.closest('.card').classList.toggle('caught', e.target.checked);
+        }
+      });
+    }
+  } catch (err){
+    modalBody.innerHTML = `<div class="modal-loading">${t('modalError')}</div>`;
+  }
+}
+
+async function init(){
+  currentLang = (await storageGet('preferences:lang')) || 'es';
+  populateLangSelect();
+  try {
+    await Promise.all([loadGenerations(), loadTypesAndStats()]);
+    loadingMsg.style.display = 'none';
+    subtitle.textContent = `${allSpecies.length} ${t('subtitleCount')}`;
+    statusMsg.textContent = t('gameLoading');
+    applyUIStrings();
+    renderGrid();
+    await loadGames();
+    statusMsg.textContent = '';
+    applyUIStrings();
+    renderGrid();
+  } catch (err){
+    loadingMsg.textContent = t('connectErrorMsg');
+  }
+}
+init();
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js');
+    });
+  }
+</script>
+</body>
+</html>
